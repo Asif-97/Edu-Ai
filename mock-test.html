@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Test | EduCore</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* =========================================
+           1. RESET & VARIABLES
+           ========================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        :root {
+            --cyan: #06b6d4; --cyan-glow: rgba(6, 182, 212, 0.5);
+            --purple: #8b5cf6; --pink: #ec4899;
+            --bg-glass: rgba(255, 255, 255, 0.03); --border-glass: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff; --text-muted: #94a3b8;
+        }
+
+        body {
+            height: 100vh; background-color: #020617; color: var(--text-main);
+            display: flex; overflow: hidden; position: relative;
+        }
+
+        /* BACKGROUND BLOBS */
+        .blob { position: absolute; border-radius: 50%; filter: blur(100px); z-index: -1; opacity: 0.5; animation: float 15s infinite alternate ease-in-out; }
+        .blob-1 { top: -10%; right: -5%; width: 500px; height: 500px; background: linear-gradient(to bottom right, var(--purple), var(--pink)); }
+        .blob-2 { bottom: -20%; left: -10%; width: 600px; height: 600px; background: linear-gradient(to top right, var(--cyan), #3b82f6); animation-delay: -5s; }
+
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-50px, 50px) scale(1.1); } 100% { transform: translate(50px, -50px) scale(0.9); } }
+
+        /* GLASSMORPHISM */
+        .glass-panel { background: var(--bg-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--border-glass); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+
+        /* =========================================
+           2. SIDEBAR & MOBILE OVERLAY
+           ========================================= */
+        .sidebar { width: 280px; margin: 1.5rem; padding: 2rem 1.5rem; border-radius: 1.5rem; display: flex; flex-direction: column; gap: 2.5rem; z-index: 1000; transition: transform 0.3s ease; }
+        .logo-container { display: flex; align-items: center; gap: 1rem; }
+        .logo-icon { background: linear-gradient(135deg, var(--cyan), var(--purple)); padding: 0.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--cyan-glow); }
+        .logo-text { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; cursor: pointer; transition: all 0.3s ease; color: var(--text-muted); font-weight: 500; text-decoration: none; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(90deg, rgba(6, 182, 212, 0.15), transparent); border-left: 3px solid var(--cyan); color: var(--cyan); }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(4px); transition: opacity 0.3s; }
+
+        /* Mobile Header */
+        .mobile-header { display: none; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; margin-bottom: 1.5rem; border-radius: 1rem; }
+        .menu-toggle { background: transparent; border: none; color: white; cursor: pointer; display: flex; align-items: center; }
+
+        /* =========================================
+           3. MAIN CONTENT AREA
+           ========================================= */
+        .main-wrapper { flex: 1; padding: 1.5rem 2rem 1.5rem 0; overflow-y: auto; z-index: 10; position: relative; display: flex; flex-direction: column; }
+        .main-wrapper::-webkit-scrollbar { width: 8px; }
+        .main-wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        .content-container { max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; padding-bottom: 2rem;}
+
+        /* =========================================
+           4. MOCK TEST UI STYLES
+           ========================================= */
+        .test-container { width: 100%; border-radius: 1.5rem; padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem; }
+        
+        .test-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        
+        .back-btn { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.3s; }
+        .back-btn:hover { color: var(--cyan); }
+
+        .timer-box { display: flex; align-items: center; gap: 0.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 0.5rem 1rem; border-radius: 0.75rem; font-weight: 700; font-size: 1.2rem; letter-spacing: 1px; }
+
+        .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple)); width: 10%; transition: width 0.3s ease; }
+
+        .question-box h2 { font-size: 1.5rem; line-height: 1.5; margin-bottom: 1.5rem; }
+        
+        .options-grid { display: grid; gap: 1rem; }
+        .option-label { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-radius: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); cursor: pointer; transition: all 0.3s ease; font-size: 1.1rem; }
+        .option-label:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); }
+        
+        /* Hide original radio buttons */
+        .option-label input[type="radio"] { display: none; }
+        
+        /* Custom Radio Button Indicator */
+        .radio-custom { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-muted); display: flex; justify-content: center; align-items: center; flex-shrink: 0; transition: all 0.3s; }
+        .radio-custom::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--cyan); transform: scale(0); transition: transform 0.2s; }
+        
+        /* Selected State */
+        .option-label input[type="radio"]:checked + .radio-custom { border-color: var(--cyan); }
+        .option-label input[type="radio"]:checked + .radio-custom::after { transform: scale(1); }
+        .option-label.selected { background: rgba(6, 182, 212, 0.1); border-color: var(--cyan); }
+
+        .action-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 1rem;}
+        
+        .btn-primary { background: linear-gradient(135deg, var(--cyan), #0284c7); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(6, 182, 212, 0.3); }
+        
+        .btn-secondary { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border-glass); padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;}
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+        /* =========================================
+           5. RESPONSIVE DESIGN
+           ========================================= */
+        @media (max-width: 768px) {
+            body { overflow-y: auto; display: block; }
+            .sidebar-overlay { display: block; opacity: 0; pointer-events: none; }
+            .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+            
+            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; margin: 0; border-radius: 0; background: rgba(2, 6, 23, 0.98); transform: translateX(-100%); width: 280px; padding: 1.5rem; }
+            .sidebar.open { transform: translateX(0); }
+            
+            .mobile-header { display: flex; }
+            .main-wrapper { padding: 1rem; display: flex; flex-direction: column; min-height: 100vh; overflow-y: visible;}
+            
+            .test-container { padding: 1.5rem; }
+            .action-buttons { flex-direction: column; }
+            .action-buttons button { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="glass-panel sidebar" id="sidebar">
+        <div class="logo-container" style="justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="logo-icon"><i data-lucide="graduation-cap" style="color: white; width: 24px;"></i></div>
+                <span class="logo-text">EduCore</span>
+            </div>
+            <button class="menu-toggle d-md-none" style="display: none;" onclick="toggleSidebar()" id="closeMenuBtn">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item">
+                <i data-lucide="layout-dashboard"></i><span>Home Overview</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="route"></i><span>Study Planner</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="bot"></i><span>AI Teacher</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="book-open"></i><span>Class Notes</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="terminal"></i><span>ICT Practical Lab</span>
+            </a>
+            
+            <div class="nav-item active">
+                <i data-lucide="check-square"></i><span>Mock Test</span>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-wrapper">
+        
+        <div class="mobile-header glass-panel">
+            <div class="logo-container" style="gap: 0.5rem;">
+                <div class="logo-icon" style="padding: 0.3rem;"><i data-lucide="graduation-cap" style="color: white; width: 20px;"></i></div>
+                <span class="logo-text" style="font-size: 1.2rem;">EduCore</span>
+            </div>
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+
+        <div class="content-container">
+            <div class="glass-panel test-container">
+                <div class="test-header">
+                    <div>
+                        <a href="index.html" class="back-btn"><i data-lucide="arrow-left"></i> Exit Test</a>
+                        <h1 style="margin-top: 1rem; font-size: 1.8rem;">Physics Mock Test</h1>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Chapter 2: Motion</p>
+                    </div>
+                    
+                    <div class="timer-box">
+                        <i data-lucide="timer"></i>
+                        <span id="countdown">15:00</span>
+                    </div>
+                </div>
+
+                <div class="question-box">
+                    <div style="display: flex; justify-content: space-between; color: var(--text-muted); margin-bottom: 0.5rem; font-size: 0.95rem;">
+                        <span>Question 1 of 10</span>
+                        <span>Topic: Velocity & Acceleration</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 10%;"></div>
+                    </div>
+
+                    <h2 style="margin-top: 2rem;">If a car accelerates uniformly from rest to 20 m/s in 5 seconds, what is its acceleration?</h2>
+
+                    <div class="options-grid">
+                        <label class="option-label" onclick="selectOption(this)">
+                            <input type="radio" name="q1" value="A">
+                            <div class="radio-custom"></div>
+                            <span>A) 2 m/s²</span>
+                        </label>
+                        <label class="option-label" onclick="selectOption(this)">
+                            <input type="radio" name="q1" value="B">
+                            <div class="radio-custom"></div>
+                            <span>B) 4 m/s²</span>
+                        </label>
+                        <label class="option-label" onclick="selectOption(this)">
+                            <input type="radio" name="q1" value="C">
+                            <div class="radio-custom"></div>
+                            <span>C) 5 m/s²</span>
+                        </label>
+                        <label class="option-label" onclick="selectOption(this)">
+                            <input type="radio" name="q1" value="D">
+                            <div class="radio-custom"></div>
+                            <span>D) 100 m/s²</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-secondary" style="opacity: 0.5; cursor: not-allowed;"><i data-lucide="chevron-left"></i> Previous</button>
+                    <button class="btn-primary" onclick="alert('Next Question logic will go here!')">Next Question <i data-lucide="chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        // Reveal close button on mobile for sidebar
+        if(window.innerWidth <= 768) {
+            document.getElementById('closeMenuBtn').style.display = 'block';
+        }
+
+        // Sidebar Toggle Logic for Mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
+        // JS for Option Selection Highlight
+        function selectOption(selectedElement) {
+            const options = document.querySelectorAll('.option-label');
+            options.forEach(opt => opt.classList.remove('selected'));
+            selectedElement.classList.add('selected');
+        }
+
+        // JS for Countdown Timer
+        let timeInSeconds = 15 * 60; // 15 minutes
+        const timerDisplay = document.getElementById('countdown');
+
+        function updateTimer() {
+            const minutes = Math.floor(timeInSeconds / 60);
+            let seconds = timeInSeconds % 60;
+
+            if (seconds < 10) seconds = '0' + seconds;
+            timerDisplay.textContent = `${minutes}:${seconds}`;
+
+            if (timeInSeconds > 0) {
+                timeInSeconds--;
+            } else {
+                alert("Time's up! Automatically submitting test.");
+                clearInterval(timerInterval);
+            }
+        }
+
+        const timerInterval = setInterval(updateTimer, 1000);
+    </script>
+</body>
+</html>

@@ -44,7 +44,7 @@
         .logo-icon { background: linear-gradient(135deg, var(--cyan), var(--purple)); padding: 0.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--cyan-glow); }
         .logo-text { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; cursor: pointer; transition: all 0.3s ease; color: var(--text-muted); font-weight: 500; }
+        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; cursor: pointer; transition: all 0.3s ease; color: var(--text-muted); font-weight: 500; text-decoration: none; }
         .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); transform: translateX(5px); }
         .nav-item.active { background: linear-gradient(90deg, rgba(6, 182, 212, 0.15), transparent); border-left: 3px solid var(--cyan); color: var(--cyan); }
 
@@ -196,6 +196,10 @@
             <div class="nav-item" onclick="switchView(this, 'view-labs')">
                 <i data-lucide="terminal"></i><span>ICT Practical Lab</span>
             </div>
+            
+            <a href="mock-test.html" class="nav-item">
+                <i data-lucide="check-square"></i><span>Mock Test</span>
+            </a>
         </nav>
     </aside>
 
@@ -254,6 +258,15 @@
                                 <p style="color: var(--text-muted); margin-top: 5px;">Practice the HTML and C-programming chapters from your ICT book.</p>
                             </div>
                         </div>
+                        
+                        <div class="glass-panel agent-card" onclick="window.location.href='mock-test.html'">
+                            <div class="icon-box" style="color: #f59e0b;"><i data-lucide="clipboard-check"></i></div>
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 600;">Live Mock Test</h3>
+                                <p style="color: var(--text-muted); margin-top: 5px;">Take board-style MCQ exams with timer and get AI weakness feedback.</p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
