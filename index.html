@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI EduCore | Class 9-10 Learning Hub</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* =========================================
+           1. RESET & VARIABLES
+           ========================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        :root {
+            --cyan: #06b6d4; --cyan-glow: rgba(6, 182, 212, 0.5);
+            --purple: #8b5cf6; --pink: #ec4899;
+            --bg-glass: rgba(255, 255, 255, 0.03); --border-glass: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff; --text-muted: #94a3b8;
+        }
+
+        body {
+            height: 100vh; background-color: #020617; color: var(--text-main);
+            display: flex; overflow: hidden; position: relative;
+        }
+
+        /* BACKGROUND BLOBS */
+        .blob { position: absolute; border-radius: 50%; filter: blur(100px); z-index: -1; opacity: 0.5; animation: float 15s infinite alternate ease-in-out; }
+        .blob-1 { top: -10%; right: -5%; width: 500px; height: 500px; background: linear-gradient(to bottom right, var(--purple), var(--pink)); }
+        .blob-2 { bottom: -20%; left: -10%; width: 600px; height: 600px; background: linear-gradient(to top right, var(--cyan), #3b82f6); animation-delay: -5s; }
+
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-50px, 50px) scale(1.1); } 100% { transform: translate(50px, -50px) scale(0.9); } }
+
+        /* GLASSMORPHISM */
+        .glass-panel { background: var(--bg-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--border-glass); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+
+        /* =========================================
+           2. SIDEBAR & MOBILE OVERLAY
+           ========================================= */
+        .sidebar { width: 280px; margin: 1.5rem; padding: 2rem 1.5rem; border-radius: 1.5rem; display: flex; flex-direction: column; gap: 2.5rem; z-index: 1000; transition: transform 0.3s ease; }
+        .logo-container { display: flex; align-items: center; gap: 1rem; }
+        .logo-icon { background: linear-gradient(135deg, var(--cyan), var(--purple)); padding: 0.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--cyan-glow); }
+        .logo-text { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; cursor: pointer; transition: all 0.3s ease; color: var(--text-muted); font-weight: 500; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(90deg, rgba(6, 182, 212, 0.15), transparent); border-left: 3px solid var(--cyan); color: var(--cyan); }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(4px); transition: opacity 0.3s; }
+
+        /* Mobile Header */
+        .mobile-header { display: none; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; margin-bottom: 1.5rem; border-radius: 1rem; }
+        .menu-toggle { background: transparent; border: none; color: white; cursor: pointer; display: flex; align-items: center; }
+
+        /* =========================================
+           3. MAIN CONTENT AREA & VIEW LOGIC
+           ========================================= */
+        .main-wrapper { flex: 1; padding: 1.5rem 2rem 1.5rem 0; overflow-y: hidden; z-index: 10; position: relative; display: flex; flex-direction: column; }
+        .view-section { display: none; flex: 1; flex-direction: column; animation: slideUp 0.5s ease-out; overflow-y: auto; padding-bottom: 2rem; }
+        .view-section.active-view { display: flex; }
+        .view-section::-webkit-scrollbar { width: 8px; }
+        .view-section::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .content-container { max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
+        .section-header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; line-height: 1.2; }
+        .section-header p { color: var(--text-muted); font-size: 1.1rem; }
+        .highlight-text { background: linear-gradient(135deg, var(--cyan), #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .btn-primary { background: linear-gradient(135deg, var(--cyan), #0284c7); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 10px 20px rgba(6, 182, 212, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(6, 182, 212, 0.5); }
+
+        /* =========================================
+           4. SPECIFIC COMPONENT STYLES
+           ========================================= */
+        
+        /* Dashboard */
+        .hero-banner { border-radius: 1.5rem; padding: 2.5rem; position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%); }
+        .hero-banner::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(to bottom, var(--cyan), var(--purple)); }
+        .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .agent-card { border-radius: 1.25rem; padding: 1.5rem; transition: all 0.4s; cursor: pointer; display: flex; flex-direction: column; gap: 1.25rem; }
+        .agent-card:hover { transform: translateY(-8px); background: rgba(255, 255, 255, 0.05); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
+        .icon-box { width: 50px; height: 50px; border-radius: 1rem; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
+
+        /* Chat Interface */
+        .chat-container { max-width: 1000px; margin: 0 auto; width: 100%; height: 100%; display: flex; flex-direction: column; gap: 1rem; }
+        .chat-header { display: flex; align-items: center; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-glass); margin-bottom: 1rem; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; padding-right: 0.5rem; }
+        .message-wrapper { display: flex; gap: 1rem; max-width: 85%; }
+        .message-wrapper.user { align-self: flex-end; flex-direction: row-reverse; }
+        .message-wrapper.ai { align-self: flex-start; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .avatar.ai { background: linear-gradient(135deg, var(--cyan), var(--purple)); }
+        .avatar.user { background: rgba(255, 255, 255, 0.1); }
+        .message-bubble { padding: 1rem 1.25rem; border-radius: 1.25rem; font-size: 1.05rem; line-height: 1.6; word-break: break-word; }
+        .user .message-bubble { background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); border-bottom-right-radius: 0.25rem; }
+        .ai .message-bubble { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-glass); border-bottom-left-radius: 0.25rem; }
+        .chat-input-box { display: flex; gap: 1rem; align-items: center; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.15); padding: 0.75rem 1rem; border-radius: 1.5rem; margin-top: auto; }
+        .chat-input-box input { flex: 1; background: transparent; border: none; color: white; font-size: 1.05rem; outline: none; width: 100%; }
+        .send-btn { background: var(--cyan); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; flex-shrink: 0; }
+        .send-btn:hover { background: #0891b2; transform: scale(1.05); }
+
+        /* RAG Library */
+        .upload-zone { border: 2px dashed rgba(6, 182, 212, 0.4); border-radius: 1.5rem; padding: 4rem 2rem; text-align: center; background: rgba(6, 182, 212, 0.02); transition: all 0.3s; cursor: pointer; }
+        .upload-zone:hover { background: rgba(6, 182, 212, 0.05); border-color: var(--cyan); }
+        .doc-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+        .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-radius: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); flex-wrap: wrap; gap: 1rem; }
+
+        /* Roadmap Timeline */
+        .timeline { position: relative; padding-left: 2rem; display: flex; flex-direction: column; gap: 2rem; margin-top: 1rem;}
+        .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.1); }
+        .timeline-item { position: relative; padding: 1.5rem; border-radius: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); width: 100%;}
+        .timeline-item::before { content: ''; position: absolute; left: -2.4rem; top: 1.5rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--bg-glass); border: 2px solid var(--text-muted); z-index: 2;}
+        .timeline-item.active { border-color: var(--cyan); background: rgba(6,182,212,0.05);}
+        .timeline-item.active::before { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 15px var(--cyan);}
+        .timeline-item.completed::before { background: #10b981; border-color: #10b981; }
+
+        /* Skill Labs (Editor) */
+        .editor-wrapper { border-radius: 1rem; border: 1px solid var(--border-glass); overflow: hidden; display: flex; flex-direction: column; height: 60vh; min-height: 400px; }
+        .editor-header { background: rgba(0,0,0,0.5); padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); flex-wrap: wrap; gap: 0.5rem; }
+        .editor-body { display: flex; flex: 1; overflow: hidden; background: #0d1117;}
+        .code-area { flex: 1; padding: 1.5rem; font-family: 'Fira Code', monospace; color: #e6edf3; overflow-y: auto; font-size: 1.05rem; line-height: 1.6; border-right: 1px solid rgba(255,255,255,0.1); white-space: pre; }
+        .preview-area { flex: 1; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
+
+        /* =========================================
+           5. RESPONSIVE DESIGN (MEDIA QUERIES)
+           ========================================= */
+        @media (max-width: 992px) {
+            .message-wrapper { max-width: 95%; }
+            .editor-body { flex-direction: column; }
+            .code-area { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); flex: none; height: 50%; }
+        }
+
+        @media (max-width: 768px) {
+            body { overflow-y: auto; display: block; }
+            .sidebar-overlay { display: block; opacity: 0; pointer-events: none; }
+            .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+            
+            /* Hide static sidebar, make it an off-canvas menu */
+            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; margin: 0; border-radius: 0; background: rgba(2, 6, 23, 0.98); transform: translateX(-100%); width: 280px; padding: 1.5rem; }
+            .sidebar.open { transform: translateX(0); }
+            
+            .mobile-header { display: flex; }
+            .main-wrapper { padding: 1rem; display: flex; flex-direction: column; height: 100vh; }
+            
+            /* Typography & Layout adjustments */
+            .section-header h1 { font-size: 2rem !important; }
+            .hero-banner { flex-direction: column; text-align: center; padding: 1.5rem; gap: 1.5rem; }
+            .hero-banner::before { width: 100%; height: 4px; left: 0; top: 0; }
+            .hero-banner h2 { font-size: 1.5rem !important; }
+            .btn-primary { width: 100%; justify-content: center; }
+            
+            .chat-input-box { padding: 0.5rem; border-radius: 1rem; }
+            .upload-zone { padding: 2.5rem 1rem; }
+            
+            /* Fix Timeline padding on mobile */
+            .timeline-item { padding: 1rem; }
+            .timeline-item::before { left: -2.35rem; }
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="glass-panel sidebar" id="sidebar">
+        <div class="logo-container" style="justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="logo-icon"><i data-lucide="graduation-cap" style="color: white; width: 24px;"></i></div>
+                <span class="logo-text">EduCore</span>
+            </div>
+            <button class="menu-toggle d-md-none" style="display: none;" onclick="toggleSidebar()" id="closeMenuBtn">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="switchView(this, 'view-dashboard')">
+                <i data-lucide="layout-dashboard"></i><span>Home Overview</span>
+            </div>
+            <div class="nav-item" onclick="switchView(this, 'view-roadmap')">
+                <i data-lucide="route"></i><span>Study Planner</span>
+            </div>
+            <div class="nav-item" onclick="switchView(this, 'view-tutor')">
+                <i data-lucide="bot"></i><span>AI Teacher</span>
+            </div>
+            <div class="nav-item" onclick="switchView(this, 'view-rag')">
+                <i data-lucide="book-open"></i><span>Class Notes</span>
+            </div>
+            <div class="nav-item" onclick="switchView(this, 'view-labs')">
+                <i data-lucide="terminal"></i><span>ICT Practical Lab</span>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-wrapper">
+        
+        <div class="mobile-header glass-panel">
+            <div class="logo-container" style="gap: 0.5rem;">
+                <div class="logo-icon" style="padding: 0.3rem;"><i data-lucide="graduation-cap" style="color: white; width: 20px;"></i></div>
+                <span class="logo-text" style="font-size: 1.2rem;">EduCore</span>
+            </div>
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+
+        <div id="view-dashboard" class="view-section active-view">
+            <div class="content-container">
+                <header class="section-header">
+                    <h1 style="font-size: 3rem;">Ace Your SSC Exams with <br><span class="highlight-text">Smart AI Tools</span></h1>
+                    <p>Welcome! Ready to dive into Math, Science, or English today?</p>
+                </header>
+
+                <div class="glass-panel hero-banner">
+                    <div class="banner-text">
+                        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Create Your Daily Routine</h2>
+                        <p style="color: #cbd5e1; margin-top: 5px; font-size: 1.1rem;">Tell our <strong>AI Planner</strong> your weak subjects, and let it make a perfect study schedule for you.</p>
+                    </div>
+                    <button class="btn-primary" onclick="alert('Analyzing your syllabus and creating a routine...')">
+                        <i data-lucide="calendar"></i> Make Routine
+                    </button>
+                </div>
+
+                <div>
+                    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="layers" style="color: var(--cyan);"></i> Your Learning Tools
+                    </h2>
+                    <div class="agents-grid">
+                        <div class="glass-panel agent-card" onclick="switchView(document.querySelectorAll('.nav-item')[2], 'view-tutor')">
+                            <div class="icon-box" style="color: var(--cyan);"><i data-lucide="brain-circuit"></i></div>
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 600;">AI Teacher</h3>
+                                <p style="color: var(--text-muted); margin-top: 5px;">Ask questions about Physics formulas, Math geometry, or English grammar.</p>
+                            </div>
+                        </div>
+                        <div class="glass-panel agent-card" onclick="switchView(document.querySelectorAll('.nav-item')[3], 'view-rag')">
+                            <div class="icon-box" style="color: var(--purple);"><i data-lucide="file-text"></i></div>
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 600;">Note Summarizer</h3>
+                                <p style="color: var(--text-muted); margin-top: 5px;">Upload your Biology or Chemistry school notes to get instant summaries.</p>
+                            </div>
+                        </div>
+                        <div class="glass-panel agent-card" onclick="switchView(document.querySelectorAll('.nav-item')[4], 'view-labs')">
+                            <div class="icon-box" style="color: #10b981;"><i data-lucide="terminal"></i></div>
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 600;">ICT Code Lab</h3>
+                                <p style="color: var(--text-muted); margin-top: 5px;">Practice the HTML and C-programming chapters from your ICT book.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-roadmap" class="view-section">
+            <div class="content-container">
+                <div class="section-header">
+                    <h1>My <span style="color: #10b981">Study Planner</span></h1>
+                    <p>Track your chapter completions before the final term exam.</p>
+                </div>
+                
+                <div class="glass-panel" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Term 1 Syllabus Progress</span>
+                        <span style="color: var(--cyan); font-weight: bold;">50%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 50%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple));"></div>
+                    </div>
+
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <h3 style="color: #10b981; margin-bottom: 0.5rem;">Week 1: Math & Physics Basics</h3>
+                            <p style="color: var(--text-muted); font-size: 0.95rem;">General Math Set/Functions and Physics Motion chapter completed. (Done)</p>
+                        </div>
+                        <div class="timeline-item active">
+                            <h3 style="color: var(--cyan); margin-bottom: 0.5rem;">Week 2: Biology & Chemistry</h3>
+                            <p style="color: var(--text-muted); font-size: 0.95rem;">Reading Biology Chapter 4 (Bioenergetics) and practicing Chemistry valency. (Current)</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h3 style="margin-bottom: 0.5rem;">Week 3: English & Bengali Grammar</h3>
+                            <p style="color: var(--text-muted); font-size: 0.95rem;">Right form of verbs, Narration, and Bengali Somash. (Upcoming)</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h3 style="margin-bottom: 0.5rem;">Week 4: Mock Tests</h3>
+                            <p style="color: var(--text-muted); font-size: 0.95rem;">Solving previous years' board question papers for all subjects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-tutor" class="view-section">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="avatar ai"><i data-lucide="glasses" style="color: white; width: 20px;"></i></div>
+                    <div>
+                        <h2 style="font-size: 1.2rem; font-weight: 600;">AI Teacher</h2>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Expert in Class 9-10 Syllabus</p>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message-wrapper ai">
+                        <div class="avatar ai"><i data-lucide="sparkles" style="color: white; width: 18px;"></i></div>
+                        <div class="message-bubble">
+                            Hello! I am your AI Teacher. Are you having trouble understanding Newton's Laws, writing an HTML table, or solving an Algebra equation? Just ask me!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-box">
+                    <i data-lucide="paperclip" style="color: var(--text-muted); cursor: pointer;" title="Upload an image of a math problem"></i>
+                    <input type="text" id="chat-input" placeholder="Type a question..." onkeypress="handleEnter(event)">
+                    <button class="send-btn" onclick="sendMessage()"><i data-lucide="send" style="width: 18px; margin-left: -2px;"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-rag" class="view-section">
+            <div class="content-container">
+                <div class="section-header">
+                    <h1>Class <span style="color: var(--purple)">Notes Library</span></h1>
+                    <p>Upload your teacher's lecture sheets or PDF guides to ask questions directly from them.</p>
+                </div>
+                
+                <div class="upload-zone" onclick="alert('Opening File Explorer to select notes...')">
+                    <i data-lucide="cloud-upload" style="width: 64px; height: 64px; color: var(--cyan); margin-bottom: 1rem;"></i>
+                    <h2 style="margin-bottom: 0.5rem;">Drag & Drop your PDFs here</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Supports PDF, DOCX, TXT (Max 50MB)</p>
+                    <button class="btn-primary">Browse Files</button>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <h3 style="margin-bottom: 1rem; color: #cbd5e1;">Your Uploaded Notes</h3>
+                    <div class="doc-list">
+                        <div class="doc-item">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <i data-lucide="book" style="color: var(--pink);"></i>
+                                <div>
+                                    <h4>Biology_Chapter_4_Notes.pdf</h4>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted);">Uploaded 2 hours ago • 1.4 MB</span>
+                                </div>
+                            </div>
+                            <i data-lucide="trash-2" style="color: var(--text-muted); cursor: pointer;"></i>
+                        </div>
+                        <div class="doc-item">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <i data-lucide="file-text" style="color: var(--cyan);"></i>
+                                <div>
+                                    <h4>SSC_Math_Suggestions_2026.docx</h4>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted);">Uploaded yesterday • 800 KB</span>
+                                </div>
+                            </div>
+                            <i data-lucide="trash-2" style="color: var(--text-muted); cursor: pointer;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-labs" class="view-section">
+            <div class="content-container">
+                <div class="section-header">
+                    <h1>ICT <span style="color: #eab308">Practical Lab</span></h1>
+                    <p>Practice the C-Programming and HTML chapters from your Class 9-10 ICT book right here.</p>
+                </div>
+                
+                <div class="editor-wrapper glass-panel">
+                    <div class="editor-header">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <i data-lucide="file-code" style="color: #eab308; width: 18px;"></i>
+                            <span style="font-family: 'Fira Code', monospace; font-size: 0.9rem;">main.c</span>
+                        </div>
+                        <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                            <i data-lucide="play" style="width: 16px;"></i> Compile & Run
+                        </button>
+                    </div>
+                    <div class="editor-body">
+                        <div class="code-area">
+<span style="color: #64748b;">// Write a C program to check if a number is Even or Odd</span>
+<span style="color: #8b5cf6;">#include</span> <span style="color: #10b981;">&lt;stdio.h&gt;</span>
+
+<span style="color: #8b5cf6;">int</span> <span style="color: #eab308;">main</span>() {
+    <span style="color: #8b5cf6;">int</span> number = <span style="color: #eab308;">10</span>;
+
+    <span style="color: #8b5cf6;">if</span> (number % <span style="color: #eab308;">2</span> == <span style="color: #eab308;">0</span>) {
+        <span style="color: #eab308;">printf</span>(<span style="color: #10b981;">"%d is an Even number.\n"</span>, number);
+    } <span style="color: #8b5cf6;">else</span> {
+        <span style="color: #eab308;">printf</span>(<span style="color: #10b981;">"%d is an Odd number.\n"</span>, number);
+    }
+
+    <span style="color: #8b5cf6;">return</span> <span style="color: #eab308;">0</span>;
+}
+                        </div>
+                        <div class="preview-area">
+                            <h4 style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Output Terminal</h4>
+                            <div style="background: rgba(0,0,0,0.5); border-radius: 0.5rem; padding: 1rem; flex: 1; font-family: 'Fira Code', monospace; font-size: 0.85rem; color: #a3e635; line-height: 1.6;">
+                                > Compiling main.c...<br>
+                                > Executing program...<br>
+                                > <br>
+                                <span style="color: white;">10 is an Even number.</span><br>
+                                > <br>
+                                > Process finished with exit code 0
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Initialize all icons
+        lucide.createIcons();
+
+        // Reveal close button on mobile
+        if(window.innerWidth <= 768) {
+            document.getElementById('closeMenuBtn').style.display = 'block';
+        }
+
+        // 1. DYNAMIC NAVIGATION LOGIC
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
+        function switchView(navElement, viewId) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            navElement.classList.add('active');
+
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('active-view');
+            });
+
+            document.getElementById(viewId).classList.add('active-view');
+
+            // Close sidebar automatically on mobile after clicking a menu item
+            if(window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            }
+        }
+
+        // 2. CHAT INTERFACE LOGIC CONNECTING TO BACKEND
+        function handleEnter(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('chat-input');
+            const messageText = inputField.value.trim();
+            if (!messageText) return;
+
+            const chatMessages = document.getElementById('chat-messages');
+
+            // Show user message
+            const userMsgHTML = `
+                <div class="message-wrapper user" style="animation: slideUp 0.3s ease;">
+                    <div class="avatar user"><i data-lucide="user" style="color: white; width: 18px;"></i></div>
+                    <div class="message-bubble">${messageText}</div>
+                </div>
+            `;
+            chatMessages.insertAdjacentHTML('beforeend', userMsgHTML);
+            lucide.createIcons(); 
+            inputField.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Show thinking animation
+            const typingId = "typing-" + Date.now();
+            const typingHTML = `
+                <div class="message-wrapper ai" id="${typingId}" style="animation: slideUp 0.3s ease;">
+                    <div class="avatar ai"><i data-lucide="bot" style="color: white; width: 18px;"></i></div>
+                    <div class="message-bubble"><em>Thinking...</em></div>
+                </div>
+            `;
+            chatMessages.insertAdjacentHTML('beforeend', typingHTML);
+            lucide.createIcons();
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            const API_URL = "/api/chat";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: messageText })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || "Backend request failed");
+                }
+
+                let aiResponseText = data.reply.replace(/\n/g, '<br>');
+                document.getElementById(typingId).remove();
+
+                const aiMsgHTML = `
+                    <div class="message-wrapper ai" style="animation: slideUp 0.3s ease;">
+                        <div class="avatar ai"><i data-lucide="sparkles" style="color: white; width: 18px;"></i></div>
+                        <div class="message-bubble">${aiResponseText}</div>
+                    </div>
+                `;
+                chatMessages.insertAdjacentHTML('beforeend', aiMsgHTML);
+                lucide.createIcons();
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            } catch (error) {
+                document.getElementById(typingId).remove();
+                
+                const fallbackMsgHTML = `
+                    <div class="message-wrapper ai" style="animation: slideUp 0.3s ease;">
+                        <div class="avatar ai"><i data-lucide="bot" style="color: white; width: 18px;"></i></div>
+                        <div class="message-bubble" style="color: #fbbf24;">
+                            ⚠️ <strong>Error:</strong> Backend connection failed. Please ensure the server.js is running on port 5000.
+                        </div>
+                    </div>
+                `;
+                chatMessages.insertAdjacentHTML('beforeend', fallbackMsgHTML);
+                lucide.createIcons();
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
