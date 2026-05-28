@@ -3,37 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | EduCore</title>
+    <title>Study Planner | EduCore</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
-        /* =========================================
-           1. RESET, VARIABLES & BASE STYLES
-           ========================================= */
+        /* BASE STYLES & SIDEBAR (SAME AS INDEX) */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        :root {
-            --cyan: #06b6d4; --cyan-glow: rgba(6, 182, 212, 0.5);
-            --purple: #8b5cf6; --pink: #ec4899;
-            --bg-glass: rgba(255, 255, 255, 0.03); --border-glass: rgba(255, 255, 255, 0.08);
-            --text-main: #ffffff; --text-muted: #94a3b8;
-        }
+        :root { --cyan: #06b6d4; --purple: #8b5cf6; --pink: #ec4899; --bg-glass: rgba(255, 255, 255, 0.03); --border-glass: rgba(255, 255, 255, 0.08); --text-main: #ffffff; --text-muted: #94a3b8; }
         body { height: 100vh; background-color: #020617; color: var(--text-main); display: flex; overflow: hidden; position: relative; }
-        
         .blob { position: absolute; border-radius: 50%; filter: blur(100px); z-index: -1; opacity: 0.5; animation: float 15s infinite alternate ease-in-out; }
         .blob-1 { top: -10%; right: -5%; width: 500px; height: 500px; background: linear-gradient(to bottom right, var(--purple), var(--pink)); }
         .blob-2 { bottom: -20%; left: -10%; width: 600px; height: 600px; background: linear-gradient(to top right, var(--cyan), #3b82f6); animation-delay: -5s; }
         @keyframes float { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-50px, 50px) scale(1.1); } 100% { transform: translate(50px, -50px) scale(0.9); } }
-        .glass-panel { background: var(--bg-glass); backdrop-filter: blur(24px); border: 1px solid var(--border-glass); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-
-        /* =========================================
-           2. SIDEBAR STYLES (COMMON FOR ALL PAGES)
-           ========================================= */
+        .glass-panel { background: var(--bg-glass); backdrop-filter: blur(24px); border: 1px solid var(--border-glass); }
+        
         .sidebar { width: 280px; margin: 1.5rem; padding: 2rem 1.5rem; border-radius: 1.5rem; display: flex; flex-direction: column; gap: 2.5rem; z-index: 1000; transition: transform 0.3s ease; }
         .logo-container { display: flex; align-items: center; justify-content: space-between; }
-        .logo-icon { background: linear-gradient(135deg, var(--cyan), var(--purple)); padding: 0.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--cyan-glow); }
+        .logo-icon { background: linear-gradient(135deg, var(--cyan), var(--purple)); padding: 0.5rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
         .logo-text { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
         .nav-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 1rem; cursor: pointer; transition: all 0.3s ease; color: var(--text-muted); font-weight: 500; text-decoration: none; }
         .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); transform: translateX(5px); }
         .nav-item.active { background: linear-gradient(90deg, rgba(6, 182, 212, 0.15), transparent); border-left: 3px solid var(--cyan); color: var(--cyan); }
@@ -43,7 +30,7 @@
         .menu-toggle { background: transparent; border: none; color: white; cursor: pointer; display: flex; align-items: center; }
 
         /* =========================================
-           3. DASHBOARD SPECIFIC STYLES
+           3. ROADMAP SPECIFIC STYLES
            ========================================= */
         .main-wrapper { flex: 1; padding: 1.5rem 2rem 1.5rem 0; overflow-y: auto; z-index: 10; position: relative; display: flex; flex-direction: column; }
         .main-wrapper::-webkit-scrollbar { width: 8px; }
@@ -52,18 +39,14 @@
         
         .section-header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; line-height: 1.2; }
         .section-header p { color: var(--text-muted); font-size: 1.1rem; }
-        .highlight-text { background: linear-gradient(135deg, var(--cyan), #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .hero-banner { border-radius: 1.5rem; padding: 2.5rem; position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%); }
-        .hero-banner::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(to bottom, var(--cyan), var(--purple)); }
-        
-        .btn-primary { background: linear-gradient(135deg, var(--cyan), #0284c7); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 10px 20px rgba(6, 182, 212, 0.3); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(6, 182, 212, 0.5); }
-        
-        .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-        .agent-card { border-radius: 1.25rem; padding: 1.5rem; transition: all 0.4s; cursor: pointer; display: flex; flex-direction: column; gap: 1.25rem; text-decoration: none; color: white;}
-        .agent-card:hover { transform: translateY(-8px); background: rgba(255, 255, 255, 0.05); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
-        .icon-box { width: 50px; height: 50px; border-radius: 1rem; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
+
+        .timeline { position: relative; padding-left: 2rem; display: flex; flex-direction: column; gap: 2rem; margin-top: 1rem;}
+        .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.1); }
+        .timeline-item { position: relative; padding: 1.5rem; border-radius: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); width: 100%;}
+        .timeline-item::before { content: ''; position: absolute; left: -2.4rem; top: 1.5rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--bg-glass); border: 2px solid var(--text-muted); z-index: 2;}
+        .timeline-item.active { border-color: var(--cyan); background: rgba(6,182,212,0.05);}
+        .timeline-item.active::before { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 15px var(--cyan);}
+        .timeline-item.completed::before { background: #10b981; border-color: #10b981; }
 
         @media (max-width: 768px) {
             body { overflow-y: auto; display: block; }
@@ -73,9 +56,8 @@
             .sidebar.open { transform: translateX(0); }
             .mobile-header { display: flex; }
             .main-wrapper { padding: 1rem; display: flex; flex-direction: column; height: 100vh; }
-            .hero-banner { flex-direction: column; text-align: center; padding: 1.5rem; gap: 1.5rem; }
-            .hero-banner::before { width: 100%; height: 4px; left: 0; top: 0; }
-            .btn-primary { width: 100%; }
+            .timeline-item { padding: 1rem; }
+            .timeline-item::before { left: -2.35rem; }
         }
     </style>
 </head>
@@ -83,7 +65,6 @@
 
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
-
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <aside class="glass-panel sidebar" id="sidebar">
@@ -98,10 +79,10 @@
         </div>
 
         <nav class="nav-menu">
-            <a href="index.html" class="nav-item active">
+            <a href="index.html" class="nav-item">
                 <i data-lucide="layout-dashboard"></i><span>Home Overview</span>
             </a>
-            <a href="roadmap.html" class="nav-item">
+            <a href="roadmap.html" class="nav-item active">
                 <i data-lucide="route"></i><span>Study Planner</span>
             </a>
             <a href="tutor.html" class="nav-item">
@@ -131,54 +112,33 @@
         </div>
 
         <div class="content-container">
-            <header class="section-header">
-                <h1>Ace Your SSC Exams with <br><span class="highlight-text">Smart AI Tools</span></h1>
-                <p>Welcome! Ready to dive into Math, Science, or English today?</p>
-            </header>
-
-            <div class="glass-panel hero-banner">
-                <div class="banner-text">
-                    <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Create Your Daily Routine</h2>
-                    <p style="color: #cbd5e1; margin-top: 5px; font-size: 1.1rem;">Tell our <strong>AI Planner</strong> your weak subjects, and let it make a perfect study schedule for you.</p>
-                </div>
-                <button class="btn-primary" onclick="alert('Analyzing your syllabus and creating a routine...')">
-                    <i data-lucide="calendar"></i> Make Routine
-                </button>
+            <div class="section-header">
+                <h1>My <span style="color: #10b981">Study Planner</span></h1>
+                <p>Track your chapter completions before the final term exam.</p>
             </div>
+            
+            <div class="glass-panel" style="padding: 2rem; border-radius: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Term 1 Syllabus Progress</span>
+                    <span style="color: var(--cyan); font-weight: bold;">50%</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                    <div style="width: 50%; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple));"></div>
+                </div>
 
-            <div>
-                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <i data-lucide="layers" style="color: var(--cyan);"></i> Your Learning Tools
-                </h2>
-                <div class="agents-grid">
-                    <a href="tutor.html" class="glass-panel agent-card">
-                        <div class="icon-box" style="color: var(--cyan);"><i data-lucide="brain-circuit"></i></div>
-                        <div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600;">AI Teacher</h3>
-                            <p style="color: var(--text-muted); margin-top: 5px;">Ask questions about Physics formulas, Math geometry, or English grammar.</p>
-                        </div>
-                    </a>
-                    <a href="rag.html" class="glass-panel agent-card">
-                        <div class="icon-box" style="color: var(--purple);"><i data-lucide="file-text"></i></div>
-                        <div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600;">Note Summarizer</h3>
-                            <p style="color: var(--text-muted); margin-top: 5px;">Upload your Biology or Chemistry school notes to get instant summaries.</p>
-                        </div>
-                    </a>
-                    <a href="labs.html" class="glass-panel agent-card">
-                        <div class="icon-box" style="color: #10b981;"><i data-lucide="terminal"></i></div>
-                        <div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600;">ICT Code Lab</h3>
-                            <p style="color: var(--text-muted); margin-top: 5px;">Practice the HTML and C-programming chapters from your ICT book.</p>
-                        </div>
-                    </a>
-                    <a href="mock-test.html" class="glass-panel agent-card">
-                        <div class="icon-box" style="color: #f59e0b;"><i data-lucide="clipboard-check"></i></div>
-                        <div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600;">Live Mock Test</h3>
-                            <p style="color: var(--text-muted); margin-top: 5px;">Take board-style MCQ exams with timer and get AI weakness feedback.</p>
-                        </div>
-                    </a>
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <h3 style="color: #10b981; margin-bottom: 0.5rem;">Week 1: Math & Physics Basics</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">General Math Set/Functions and Physics Motion chapter completed. (Done)</p>
+                    </div>
+                    <div class="timeline-item active">
+                        <h3 style="color: var(--cyan); margin-bottom: 0.5rem;">Week 2: Biology & Chemistry</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Reading Biology Chapter 4 (Bioenergetics) and practicing Chemistry valency. (Current)</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h3 style="margin-bottom: 0.5rem;">Week 3: English & Bengali Grammar</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Right form of verbs, Narration, and Bengali Somash. (Upcoming)</p>
+                    </div>
                 </div>
             </div>
         </div>
