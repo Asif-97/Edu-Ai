@@ -1,39 +1,44 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { Groq } = require('groq-sdk');
+require('dotenv').config();
 
 const app = express();
-const port = 5000;
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Initialize Groq API
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Initialize Groq AI
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY
+});
 
-// API Route for Chat
+// Chat API Route
 app.post('/api/chat', async (req, res) => {
     try {
-        const userMessage = req.body.message;
-        const systemPrompt = "You are a friendly and expert AI Teacher for Class 9-10 students in Bangladesh. Explain things simply, sometimes using a mix of Bengali and English if helpful.";
-
-        const completion = await groq.chat.completions.create({
-            model: "llama-3.1-8b-instant", // সঠিক এবং নতুন মডেল
+        const { message } = req.body;
+        
+        const chatCompletion = await groq.chat.completions.create({
             messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userMessage }
-            ]
+                { 
+                    role: "system", 
+                    content: "You are an expert AI teacher for class 9-10 students in Bangladesh. You help them with physics, math, english, and other SSC subjects. Always explain concepts simply. You can speak both English and Bengali." 
+                },
+                { role: "user", content: message }
+            ],
+            model: "llama3-8b-8192", // Groq's fast model
         });
 
-        res.json({ success: true, reply: completion.choices[0].message.content });
+        res.json({ success: true, reply: chatCompletion.choices[0].message.content });
     } catch (error) {
         console.error("Groq API Error:", error);
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: "Backend Server Error" });
     }
 });
 
-app.listen(port, () => {
-    console.log(`EduCore Backend running on http://localhost:${port}`);
-});
+// VERY IMPORTANT FOR VERCEL: Export the app
+module.exports = app;
+
+// Local testing fallback
+if (require.main === module) {
+    app.listen(5000, () => console.log("Server running on port 5000"));
+}
