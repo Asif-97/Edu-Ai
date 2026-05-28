@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dynamic Routine | EduCore</title>
+    <title>Grammar Lab | EduCore</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
@@ -37,12 +37,11 @@
         .section-header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
         .section-header p { color: var(--text-muted); font-size: 1.1rem; }
         
-        /* ROUTINE SPECIFIC */
-        .subject-tags { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
-        .tag { padding: 0.5rem 1rem; border-radius: 2rem; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.3s; font-size: 0.95rem; user-select: none; }
-        .tag:hover { background: rgba(255,255,255,0.1); }
-        .tag.selected { background: rgba(6, 182, 212, 0.2); border-color: var(--cyan); color: var(--cyan); }
-        .routine-card { background: rgba(255,255,255,0.02); border-left: 4px solid var(--purple); padding: 1.5rem; border-radius: 0 1rem 1rem 0; margin-top: 1rem; }
+        /* GRAMMAR LAB SPECIFIC */
+        .grammar-sentence { font-size: 1.25rem; line-height: 2; padding: 2.5rem; background: rgba(255,255,255,0.02); border-radius: 1.5rem; border: 1px solid var(--border-glass); text-align: center; }
+        .blank-input { background: rgba(255,255,255,0.05); border: none; border-bottom: 2px solid var(--cyan); color: var(--cyan); font-size: 1.25rem; width: 140px; text-align: center; outline: none; padding: 0.2rem; margin: 0 0.5rem; font-weight: 600; transition: all 0.3s;}
+        .blank-input:focus { background: rgba(6, 182, 212, 0.1); }
+        .grammar-feedback { color: #f59e0b; margin-top: 1.5rem; font-size: 1rem; display: none; background: rgba(245, 158, 11, 0.1); padding: 1rem; border-radius: 1rem; border: 1px solid rgba(245, 158, 11, 0.3); }
         .btn-primary { background: linear-gradient(135deg, var(--cyan), #0284c7); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
 
         @media (max-width: 768px) {
@@ -51,6 +50,8 @@
             .sidebar-overlay.active { display: block; }
             .mobile-header { display: flex; }
             .main-wrapper { padding: 1rem; height: 100dvh; }
+            .grammar-sentence { padding: 1.5rem; font-size: 1.1rem; }
+            .blank-input { width: 100px; font-size: 1.1rem; }
             .btn-primary { width: 100%; justify-content: center; }
         }
     </style>
@@ -60,7 +61,7 @@
     <div class="blob blob-2"></div>
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-  <aside class="glass-panel sidebar" id="sidebar">
+ <aside class="glass-panel sidebar" id="sidebar">
         <div class="logo-container">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div class="logo-icon"><i data-lucide="graduation-cap" style="color: white; width: 24px;"></i></div>
@@ -70,12 +71,12 @@
         </div>
         <nav class="nav-menu">
             <a href="index.html" class="nav-item"><i data-lucide="layout-dashboard"></i><span>Home Overview</span></a>
-            <a href="roadmap.html" class="nav-item active"><i data-lucide="calendar-clock"></i><span>Dynamic Routine</span></a>
+            <a href="roadmap.html" class="nav-item"><i data-lucide="calendar-clock"></i><span>Dynamic Routine</span></a>
             <a href="tutor.html" class="nav-item"><i data-lucide="bot"></i><span>AI Teacher</span></a>
             <a href="rag.html" class="nav-item"><i data-lucide="book-open"></i><span>Class Notes</span></a>
             <a href="cq.html" class="nav-item"><i data-lucide="pen-tool"></i><span>CQ Evaluator</span></a>
             <a href="flashcards.html" class="nav-item"><i data-lucide="layers"></i><span>Smart Flashcards</span></a>
-            <a href="grammar.html" class="nav-item"><i data-lucide="languages"></i><span>Grammar Lab</span></a>
+            <a href="grammar.html" class="nav-item active"><i data-lucide="languages"></i><span>Grammar Lab</span></a>
             <a href="labs.html" class="nav-item"><i data-lucide="terminal"></i><span>ICT Practical Lab</span></a>
             <a href="mock-test.html" class="nav-item"><i data-lucide="check-square"></i><span>Mock Test</span></a>
         </nav>
@@ -92,36 +93,30 @@
 
         <div class="content-container">
             <div class="section-header">
-                <h1>Dynamic <span style="color: var(--purple)">Revision Routine</span></h1>
-                <p>Select your weak subjects and let AI generate a customized micro-routine for the upcoming exams.</p>
+                <h1>Grammar <span style="color: #ec4899">Language Lab</span></h1>
+                <p>Practice English 2nd Paper (Right form of verbs, Prepositions) with live AI explanations.</p>
             </div>
             
             <div class="glass-panel" style="padding: 2.5rem; border-radius: 1.5rem;">
-                <h3 style="margin-bottom: 0.5rem;">Which subjects need more focus?</h3>
-                <div class="subject-tags" id="subject-tags">
-                    <div class="tag" onclick="toggleTag(this)">Physics</div>
-                    <div class="tag selected" onclick="toggleTag(this)">Chemistry</div>
-                    <div class="tag" onclick="toggleTag(this)">Higher Math</div>
-                    <div class="tag selected" onclick="toggleTag(this)">Biology</div>
-                    <div class="tag" onclick="toggleTag(this)">BGS</div>
-                    <div class="tag" onclick="toggleTag(this)">English 2nd Paper</div>
-                    <div class="tag" onclick="toggleTag(this)">Bangla 2nd Paper</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; color: var(--text-muted);">
+                    <span>Topic: Right Form of Verbs</span>
+                    <span>Score: 0/5</span>
                 </div>
-                
-                <button class="btn-primary" style="margin-top: 2rem;" onclick="generateRoutine(this)">
-                    <i data-lucide="sparkles"></i> Generate AI Plan
-                </button>
 
-                <div id="generated-routine" style="display: none; margin-top: 2rem; border-top: 1px solid var(--border-glass); padding-top: 2rem;">
-                    <h3 style="color: var(--cyan); margin-bottom: 1rem;">Your AI Generated Plan (Next 3 Days)</h3>
-                    <div class="routine-card">
-                        <h4 style="color: #cbd5e1;">Day 1: Chemistry Focus</h4>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Morning: Read Chapter 4 (Periodic Table).<br>Evening: Solve Board CQ questions of 2023.</p>
-                    </div>
-                    <div class="routine-card" style="border-left-color: var(--cyan);">
-                        <h4 style="color: #cbd5e1;">Day 2: Biology & Revision</h4>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Morning: Bioenergetics diagrams practice.<br>Evening: Take a Mock Test on EduCore.</p>
-                    </div>
+                <div class="grammar-sentence">
+                    By the time the doctor arrived, the patient 
+                    <input type="text" class="blank-input" id="grammar-ans" placeholder="(die)"> .
+                </div>
+
+                <div id="grammar-feedback" class="grammar-feedback">
+                    <i data-lucide="info" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 0.5rem;"></i> 
+                    <strong>AI Rule Explanation:</strong> "By the time" যুক্ত sentence-এ past perfect tense ব্যবহৃত হয়। তাই সঠিক উত্তর হবে "had died".
+                </div>
+
+                <div style="text-align: right; margin-top: 2rem;">
+                    <button class="btn-primary" onclick="checkGrammar()">
+                        <i data-lucide="check-square"></i> Check Answer
+                    </button>
                 </div>
             </div>
         </div>
@@ -134,19 +129,19 @@
             document.getElementById('sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
         }
-        function toggleTag(element) {
-            element.classList.toggle('selected');
-        }
-        function generateRoutine(btn) {
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Analyzing...`;
-            lucide.createIcons();
+        function checkGrammar() {
+            const input = document.getElementById('grammar-ans');
+            const feedback = document.getElementById('grammar-feedback');
             
-            setTimeout(() => {
-                document.getElementById('generated-routine').style.display = 'block';
-                btn.innerHTML = originalHTML;
-                lucide.createIcons();
-            }, 1000);
+            if(input.value.toLowerCase().trim() === 'had died') {
+                input.style.borderColor = '#10b981';
+                input.style.color = '#10b981';
+                feedback.style.display = 'none';
+            } else {
+                input.style.borderColor = '#ef4444';
+                input.style.color = '#ef4444';
+                feedback.style.display = 'block';
+            }
         }
     </script>
 </body>

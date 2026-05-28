@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dynamic Routine | EduCore</title>
+    <title>CQ Evaluator | EduCore</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
@@ -37,12 +37,9 @@
         .section-header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
         .section-header p { color: var(--text-muted); font-size: 1.1rem; }
         
-        /* ROUTINE SPECIFIC */
-        .subject-tags { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
-        .tag { padding: 0.5rem 1rem; border-radius: 2rem; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.3s; font-size: 0.95rem; user-select: none; }
-        .tag:hover { background: rgba(255,255,255,0.1); }
-        .tag.selected { background: rgba(6, 182, 212, 0.2); border-color: var(--cyan); color: var(--cyan); }
-        .routine-card { background: rgba(255,255,255,0.02); border-left: 4px solid var(--purple); padding: 1.5rem; border-radius: 0 1rem 1rem 0; margin-top: 1rem; }
+        .cq-textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: white; border-radius: 1rem; padding: 1.5rem; font-size: 1.05rem; resize: vertical; min-height: 200px; outline: none; margin-bottom: 1rem; }
+        .cq-textarea:focus { border-color: var(--cyan); }
+        .feedback-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 1rem; padding: 1.5rem; display: none; margin-top: 1rem; }
         .btn-primary { background: linear-gradient(135deg, var(--cyan), #0284c7); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
 
         @media (max-width: 768px) {
@@ -52,6 +49,7 @@
             .mobile-header { display: flex; }
             .main-wrapper { padding: 1rem; height: 100dvh; }
             .btn-primary { width: 100%; justify-content: center; }
+            .btn-group { flex-direction: column; width: 100%; }
         }
     </style>
 </head>
@@ -59,8 +57,7 @@
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-
-  <aside class="glass-panel sidebar" id="sidebar">
+<aside class="glass-panel sidebar" id="sidebar">
         <div class="logo-container">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div class="logo-icon"><i data-lucide="graduation-cap" style="color: white; width: 24px;"></i></div>
@@ -70,10 +67,10 @@
         </div>
         <nav class="nav-menu">
             <a href="index.html" class="nav-item"><i data-lucide="layout-dashboard"></i><span>Home Overview</span></a>
-            <a href="roadmap.html" class="nav-item active"><i data-lucide="calendar-clock"></i><span>Dynamic Routine</span></a>
+            <a href="roadmap.html" class="nav-item"><i data-lucide="calendar-clock"></i><span>Dynamic Routine</span></a>
             <a href="tutor.html" class="nav-item"><i data-lucide="bot"></i><span>AI Teacher</span></a>
             <a href="rag.html" class="nav-item"><i data-lucide="book-open"></i><span>Class Notes</span></a>
-            <a href="cq.html" class="nav-item"><i data-lucide="pen-tool"></i><span>CQ Evaluator</span></a>
+            <a href="cq.html" class="nav-item active"><i data-lucide="pen-tool"></i><span>CQ Evaluator</span></a>
             <a href="flashcards.html" class="nav-item"><i data-lucide="layers"></i><span>Smart Flashcards</span></a>
             <a href="grammar.html" class="nav-item"><i data-lucide="languages"></i><span>Grammar Lab</span></a>
             <a href="labs.html" class="nav-item"><i data-lucide="terminal"></i><span>ICT Practical Lab</span></a>
@@ -92,36 +89,30 @@
 
         <div class="content-container">
             <div class="section-header">
-                <h1>Dynamic <span style="color: var(--purple)">Revision Routine</span></h1>
-                <p>Select your weak subjects and let AI generate a customized micro-routine for the upcoming exams.</p>
+                <h1>AI <span style="color: var(--cyan)">CQ Evaluator</span></h1>
+                <p>Type your creative answer (সৃজনশীল প্রশ্ন) and get instant marks and feedback based on board rubrics.</p>
             </div>
             
-            <div class="glass-panel" style="padding: 2.5rem; border-radius: 1.5rem;">
-                <h3 style="margin-bottom: 0.5rem;">Which subjects need more focus?</h3>
-                <div class="subject-tags" id="subject-tags">
-                    <div class="tag" onclick="toggleTag(this)">Physics</div>
-                    <div class="tag selected" onclick="toggleTag(this)">Chemistry</div>
-                    <div class="tag" onclick="toggleTag(this)">Higher Math</div>
-                    <div class="tag selected" onclick="toggleTag(this)">Biology</div>
-                    <div class="tag" onclick="toggleTag(this)">BGS</div>
-                    <div class="tag" onclick="toggleTag(this)">English 2nd Paper</div>
-                    <div class="tag" onclick="toggleTag(this)">Bangla 2nd Paper</div>
+            <div class="glass-panel" style="padding: 2rem; border-radius: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 1rem; border: 1px solid var(--border-glass); margin-bottom: 1.5rem;">
+                    <h4 style="color: #cbd5e1;">Question (প্রয়োগ - ৩ মার্কস):</h4>
+                    <p style="color: var(--text-muted); margin-top: 5px;">উদ্দীপকের আলোকে বস্তুটি কত বেগে মাটিতে আঘাত করবে তা নির্ণয় করো।</p>
                 </div>
-                
-                <button class="btn-primary" style="margin-top: 2rem;" onclick="generateRoutine(this)">
-                    <i data-lucide="sparkles"></i> Generate AI Plan
-                </button>
 
-                <div id="generated-routine" style="display: none; margin-top: 2rem; border-top: 1px solid var(--border-glass); padding-top: 2rem;">
-                    <h3 style="color: var(--cyan); margin-bottom: 1rem;">Your AI Generated Plan (Next 3 Days)</h3>
-                    <div class="routine-card">
-                        <h4 style="color: #cbd5e1;">Day 1: Chemistry Focus</h4>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Morning: Read Chapter 4 (Periodic Table).<br>Evening: Solve Board CQ questions of 2023.</p>
-                    </div>
-                    <div class="routine-card" style="border-left-color: var(--cyan);">
-                        <h4 style="color: #cbd5e1;">Day 2: Biology & Revision</h4>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Morning: Bioenergetics diagrams practice.<br>Evening: Take a Mock Test on EduCore.</p>
-                    </div>
+                <textarea class="cq-textarea" placeholder="Type your answer here or upload an image of your notebook..."></textarea>
+                
+                <div class="btn-group" style="display: flex; gap: 1rem;">
+                    <button class="btn-primary" onclick="evaluateCQ(this)">
+                        <i data-lucide="check-circle"></i> Evaluate Answer
+                    </button>
+                    <button class="btn-primary" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border-glass); box-shadow: none;">
+                        <i data-lucide="image"></i> Upload Photo
+                    </button>
+                </div>
+
+                <div id="cq-feedback" class="feedback-box">
+                    <h3 style="color: #10b981; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="award"></i> Marks Awarded: 2.5 / 3.0</h3>
+                    <p style="color: #a7f3d0; margin-top: 0.5rem; font-size: 0.95rem;"><strong>AI Feedback:</strong> তোমার সূত্র প্রয়োগ এবং ক্যালকুলেশন সঠিক হয়েছে। তবে উত্তরে একক (m/s) উল্লেখ করতে ভুলে গেছ। পরীক্ষায় এককের জন্য ০.৫ মার্কস কাটা যেতে পারে।</p>
                 </div>
             </div>
         </div>
@@ -134,19 +125,15 @@
             document.getElementById('sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
         }
-        function toggleTag(element) {
-            element.classList.toggle('selected');
-        }
-        function generateRoutine(btn) {
+        function evaluateCQ(btn) {
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Analyzing...`;
+            btn.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Evaluating...`;
             lucide.createIcons();
-            
             setTimeout(() => {
-                document.getElementById('generated-routine').style.display = 'block';
+                document.getElementById('cq-feedback').style.display = 'block';
                 btn.innerHTML = originalHTML;
                 lucide.createIcons();
-            }, 1000);
+            }, 1500);
         }
     </script>
 </body>

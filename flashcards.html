@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dynamic Routine | EduCore</title>
+    <title>Smart Flashcards | EduCore</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
@@ -37,12 +37,17 @@
         .section-header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
         .section-header p { color: var(--text-muted); font-size: 1.1rem; }
         
-        /* ROUTINE SPECIFIC */
-        .subject-tags { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
-        .tag { padding: 0.5rem 1rem; border-radius: 2rem; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.3s; font-size: 0.95rem; user-select: none; }
-        .tag:hover { background: rgba(255,255,255,0.1); }
+        .tag { padding: 0.5rem 1rem; border-radius: 2rem; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.3s; font-size: 0.9rem; }
         .tag.selected { background: rgba(6, 182, 212, 0.2); border-color: var(--cyan); color: var(--cyan); }
-        .routine-card { background: rgba(255,255,255,0.02); border-left: 4px solid var(--purple); padding: 1.5rem; border-radius: 0 1rem 1rem 0; margin-top: 1rem; }
+
+        .flashcard-container { display: flex; justify-content: center; margin-top: 1rem; perspective: 1000px; }
+        .flashcard { width: 100%; max-width: 500px; height: 350px; cursor: pointer; }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2.5rem; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .flashcard-front { background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); }
+        .flashcard-back { background: linear-gradient(135deg, var(--cyan), var(--purple)); transform: rotateY(180deg); border: 1px solid rgba(255,255,255,0.2); }
+        
         .btn-primary { background: linear-gradient(135deg, var(--cyan), #0284c7); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
 
         @media (max-width: 768px) {
@@ -51,7 +56,8 @@
             .sidebar-overlay.active { display: block; }
             .mobile-header { display: flex; }
             .main-wrapper { padding: 1rem; height: 100dvh; }
-            .btn-primary { width: 100%; justify-content: center; }
+            .flashcard { height: 300px; }
+            .flashcard-front h2, .flashcard-back h2 { font-size: 1.5rem !important; }
         }
     </style>
 </head>
@@ -70,11 +76,11 @@
         </div>
         <nav class="nav-menu">
             <a href="index.html" class="nav-item"><i data-lucide="layout-dashboard"></i><span>Home Overview</span></a>
-            <a href="roadmap.html" class="nav-item active"><i data-lucide="calendar-clock"></i><span>Dynamic Routine</span></a>
+            <a href="roadmap.html" class="nav-item"><i data-lucide="calendar-clock"></i><span>Dynamic Routine</span></a>
             <a href="tutor.html" class="nav-item"><i data-lucide="bot"></i><span>AI Teacher</span></a>
             <a href="rag.html" class="nav-item"><i data-lucide="book-open"></i><span>Class Notes</span></a>
             <a href="cq.html" class="nav-item"><i data-lucide="pen-tool"></i><span>CQ Evaluator</span></a>
-            <a href="flashcards.html" class="nav-item"><i data-lucide="layers"></i><span>Smart Flashcards</span></a>
+            <a href="flashcards.html" class="nav-item active"><i data-lucide="layers"></i><span>Smart Flashcards</span></a>
             <a href="grammar.html" class="nav-item"><i data-lucide="languages"></i><span>Grammar Lab</span></a>
             <a href="labs.html" class="nav-item"><i data-lucide="terminal"></i><span>ICT Practical Lab</span></a>
             <a href="mock-test.html" class="nav-item"><i data-lucide="check-square"></i><span>Mock Test</span></a>
@@ -92,37 +98,37 @@
 
         <div class="content-container">
             <div class="section-header">
-                <h1>Dynamic <span style="color: var(--purple)">Revision Routine</span></h1>
-                <p>Select your weak subjects and let AI generate a customized micro-routine for the upcoming exams.</p>
+                <h1>Smart <span style="color: var(--pink)">Flashcards</span></h1>
+                <p>Memorize critical dates, events, and formulas effortlessly. Click the card to reveal the answer.</p>
             </div>
             
-            <div class="glass-panel" style="padding: 2.5rem; border-radius: 1.5rem;">
-                <h3 style="margin-bottom: 0.5rem;">Which subjects need more focus?</h3>
-                <div class="subject-tags" id="subject-tags">
-                    <div class="tag" onclick="toggleTag(this)">Physics</div>
-                    <div class="tag selected" onclick="toggleTag(this)">Chemistry</div>
-                    <div class="tag" onclick="toggleTag(this)">Higher Math</div>
-                    <div class="tag selected" onclick="toggleTag(this)">Biology</div>
-                    <div class="tag" onclick="toggleTag(this)">BGS</div>
-                    <div class="tag" onclick="toggleTag(this)">English 2nd Paper</div>
-                    <div class="tag" onclick="toggleTag(this)">Bangla 2nd Paper</div>
-                </div>
-                
-                <button class="btn-primary" style="margin-top: 2rem;" onclick="generateRoutine(this)">
-                    <i data-lucide="sparkles"></i> Generate AI Plan
-                </button>
+            <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                <span class="tag selected">BGS (ইতিহাস)</span>
+                <span class="tag">Biology</span>
+                <span class="tag">Physics Formulas</span>
+            </div>
 
-                <div id="generated-routine" style="display: none; margin-top: 2rem; border-top: 1px solid var(--border-glass); padding-top: 2rem;">
-                    <h3 style="color: var(--cyan); margin-bottom: 1rem;">Your AI Generated Plan (Next 3 Days)</h3>
-                    <div class="routine-card">
-                        <h4 style="color: #cbd5e1;">Day 1: Chemistry Focus</h4>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Morning: Read Chapter 4 (Periodic Table).<br>Evening: Solve Board CQ questions of 2023.</p>
-                    </div>
-                    <div class="routine-card" style="border-left-color: var(--cyan);">
-                        <h4 style="color: #cbd5e1;">Day 2: Biology & Revision</h4>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Morning: Bioenergetics diagrams practice.<br>Evening: Take a Mock Test on EduCore.</p>
+            <div class="flashcard-container">
+                <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <i data-lucide="help-circle" style="color: var(--text-muted); width: 32px; height: 32px; margin-bottom: 1rem;"></i>
+                            <h2 style="font-size: 1.8rem; font-weight: 600;">ছয় দফা দাবি কবে উত্থাপন করা হয়?</h2>
+                            <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.9rem;">(Click to flip)</p>
+                        </div>
+                        <div class="flashcard-back">
+                            <i data-lucide="check-circle" style="color: white; width: 32px; height: 32px; margin-bottom: 1rem;"></i>
+                            <h2 style="font-size: 2rem; font-weight: 700;">১৯৬৬ সালের ৫-৬ ফেব্রুয়ারি</h2>
+                            <p style="color: rgba(255,255,255,0.8); margin-top: 1rem; font-size: 1.1rem;">লাহোরে বিরোধী দলগুলোর এক সম্মেলনে বঙ্গবন্ধু শেখ মুজিবুর রহমান এটি উত্থাপন করেন।</p>
+                        </div>
                     </div>
                 </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem; display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                <button class="btn-primary" style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem;"><i data-lucide="arrow-left"></i></button>
+                <span style="font-weight: 600;">Card 1 / 15</span>
+                <button class="btn-primary" style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem;"><i data-lucide="arrow-right"></i></button>
             </div>
         </div>
     </main>
@@ -133,20 +139,6 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
-        }
-        function toggleTag(element) {
-            element.classList.toggle('selected');
-        }
-        function generateRoutine(btn) {
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Analyzing...`;
-            lucide.createIcons();
-            
-            setTimeout(() => {
-                document.getElementById('generated-routine').style.display = 'block';
-                btn.innerHTML = originalHTML;
-                lucide.createIcons();
-            }, 1000);
         }
     </script>
 </body>
