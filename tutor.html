@@ -193,8 +193,11 @@
 
             // API URL 
             // Note: If you test locally with Live Server without starting node.js, it will fail.
-            const API_URL = "/api/chat";
-
+           // স্বয়ংক্রিয়ভাবে লোকাল এবং লাইভ সার্ভার ডিটেক্ট করার ম্যাজিক কোড
+            // localhost এর বদলে সরাসরি 127.0.0.1 আইপি ব্যবহার করছি
+    const API_URL = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') 
+    ? "http://127.0.0.1:5000/api/chat" 
+    : "/api/chat";
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",

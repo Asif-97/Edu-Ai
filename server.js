@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const { Groq } = require('groq-sdk');
-require('dotenv').config(); // লোকাল .env ফাইল পড়ার জন্য
+require('dotenv').config();
 
 const app = express();
+
+// CORS সেটাপ (সব জায়গা থেকে রিকোয়েস্ট অ্যালাউ করার জন্য)
 app.use(cors());
 app.use(express.json());
 
@@ -19,6 +21,10 @@ app.post('/api/chat', async (req, res) => {
     try {
         const { message } = req.body;
         
+        if (!message) {
+            return res.status(400).json({ success: false, error: "No message provided" });
+        }
+
         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 { 
@@ -30,7 +36,7 @@ app.post('/api/chat', async (req, res) => {
             model: "llama3-8b-8192",
         });
 
-        res.json({ success: true, reply: chatCompletion.choices[0].message.content });
+        res.status(200).json({ success: true, reply: chatCompletion.choices[0].message.content });
     } catch (error) {
         console.error("Groq Chat API Error:", error);
         res.status(500).json({ success: false, error: "Backend Server Error" });
@@ -66,7 +72,7 @@ app.post('/api/routine', async (req, res) => {
 
         let aiResponse = chatCompletion.choices[0].message.content.trim();
         
-        // Regex Error Fixed
+        // JSON ফরম্যাট ক্লিন করার কোড (VS Code Error Fixed)
         const jsonRegex = new RegExp('```json', 'gi');
         const tickRegex = new RegExp('```', 'g');
         aiResponse = aiResponse.replace(jsonRegex, '').replace(tickRegex, '').trim();
@@ -80,11 +86,12 @@ app.post('/api/routine', async (req, res) => {
 });
 
 // ==========================================
-// Vercel এবং Localhost এর জন্য এক্সপোর্ট
+// Vercel এবং Local Server কনফিগারেশন
 // ==========================================
-module.exports = app;
+module.exports = app; // Vercel-এর জন্য
 
+// শুধুমাত্র লোকাল পিসিতে চালানোর জন্য
 if (require.main === module) {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`Server is running beautifully on port ${PORT}`));
 }
